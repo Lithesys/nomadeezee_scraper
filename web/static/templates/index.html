@@ -77,10 +77,12 @@
                             <div class="form-group">
                                 <label for="latitude">Latitude:</label>
                                 <input type="number" step="0.000000000000001" id="latitude" name="latitude" value="{{.Lat}}">
+                                <small class="text-muted">Optional. Leave blank to use the location in your keywords.</small>
                             </div>
                             <div class="form-group">
                                 <label for="longitude">Longitude:</label>
                                 <input type="number" step="0.000000000000001" id="longitude" name="longitude" value="{{.Lon}}">
+                                <small class="text-muted">Enter both coordinates only when you want to target a specific area.</small>
                             </div>
                         </fieldset>
                     </details>
