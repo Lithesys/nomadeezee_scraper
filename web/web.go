@@ -64,6 +64,11 @@ func New(svc *Service, addr string) (*Server, error) {
 
 		ans.delete(w, r)
 	})
+	mux.HandleFunc("/retry", func(w http.ResponseWriter, r *http.Request) {
+		r = requestWithID(r)
+
+		ans.retry(w, r)
+	})
 	mux.HandleFunc("/jobs", ans.getJobs)
 	mux.HandleFunc("/view", func(w http.ResponseWriter, r *http.Request) {
 		r = requestWithID(r)

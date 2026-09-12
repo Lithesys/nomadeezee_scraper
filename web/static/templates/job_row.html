@@ -10,6 +10,12 @@
             <a href="/download?id={{.ID}}&format=nomadeezee" download class="button download-button">Download Nomadeezee CSV</a>
             <a href="/download?id={{.ID}}" download class="button raw-download-button">Download raw CSV</a>
         {{ end }}
+        {{ if or (eq .Status "ok") (eq .Status "failed") }}
+            <button type="button" class="retry-button"
+                    hx-post="/retry?id={{.ID}}"
+                    hx-target="closest tr"
+                    hx-swap="afterend">Retry</button>
+        {{ end }}
         <button hx-delete="/delete?id={{.ID}}" 
                 hx-target="closest tr"
                 hx-swap="outerHTML"
