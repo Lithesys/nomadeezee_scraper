@@ -1,0 +1,47 @@
+name: Google Maps Scrape
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: Google Maps search query
+        required: true
+        default: cafes in Bangkok
+        type: string
+
+jobs:
+  scrape:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare query
+        env:
+          QUERY: ${{ inputs.query }}
+        run: |
+          mkdir -p gmaps-output
+          printf '%s\n' "$QUERY" > queries.txt
+
+      - name: Run scraper
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/queries.txt:/queries.txt:ro" \
+            -v "$GITHUB_WORKSPACE/gmaps-output:/out" \
+            gosom/google-maps-scraper \
+            -input /queries.txt \
+            -results /out/results.csv \
+            -depth 1 \
+            -exit-on-inactivity 3m
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-maps-results
+          path: gmaps-output/
+          if-no-files-found: warn
