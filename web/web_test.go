@@ -78,6 +78,33 @@ func TestViewJobInvalidID(t *testing.T) {
 	}
 }
 
+func TestDownloadNomadeezeeCSV(t *testing.T) {
+	dir := t.TempDir()
+	id := "33333333-3333-3333-3333-333333333333"
+	csv := "title,category,latitude,longitude,address,complete_address\n" +
+		"Coffee Place,Coffee shop,16.0544,108.2022,1 Main St,\"{\"\"city\"\":\"\"Da Nang\"\",\"\"country\"\":\"\"Vietnam\"\"}\"\n"
+	if err := os.WriteFile(filepath.Join(dir, id+".csv"), []byte(csv), 0o600); err != nil {
+		t.Fatalf("write csv: %v", err)
+	}
+
+	srv := newTestServer(t, dir)
+	req := requestWithID(httptest.NewRequest(http.MethodGet, "/download?id="+id+"&format=nomadeezee", http.NoBody))
+	rec := httptest.NewRecorder()
+	srv.download(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	if !strings.Contains(rec.Header().Get("Content-Disposition"), id+"-nomadeezee.csv") {
+		t.Fatalf("unexpected content disposition: %q", rec.Header().Get("Content-Disposition"))
+	}
+
+	if !strings.Contains(rec.Body.String(), "title,description,category,latitude,longitude,address,country,province,is_public,is_premium_only") {
+		t.Fatalf("unexpected CSV header: %s", rec.Body.String())
+	}
+}
+
 func TestSecurityHeadersAllowMapResources(t *testing.T) {
 	handler := securityHeaders(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)

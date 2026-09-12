@@ -7,7 +7,8 @@
     </td>
     <td>
         {{ if eq .Status "ok" }}
-            <a href="/download?id={{.ID}}" download class="button download-button">Download CSV</a>
+            <a href="/download?id={{.ID}}&format=nomadeezee" download class="button download-button">Download Nomadeezee CSV</a>
+            <a href="/download?id={{.ID}}" download class="button raw-download-button">Download raw CSV</a>
         {{ end }}
         <button hx-delete="/delete?id={{.ID}}" 
                 hx-target="closest tr"

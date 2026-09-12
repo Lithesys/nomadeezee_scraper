@@ -432,6 +432,17 @@ func (s *Server) download(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
 	w.Header().Set("Content-Type", "text/csv")
 
+	if r.URL.Query().Get("format") == "nomadeezee" {
+		fileName = strings.TrimSuffix(fileName, ".csv") + "-nomadeezee.csv"
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
+
+		if err := writeNomadeezeeCSV(w, file); err != nil {
+			http.Error(w, "Failed to format CSV", http.StatusInternalServerError)
+		}
+
+		return
+	}
+
 	_, err = io.Copy(w, file)
 	if err != nil {
 		http.Error(w, "Failed to send file", http.StatusInternalServerError)
