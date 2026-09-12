@@ -20,8 +20,8 @@ func TestGetPlacesParsesCSV(t *testing.T) {
 	dir := t.TempDir()
 	svc := NewService(nil, dir)
 
-	csv := "title,address,latitude,longitude,link,category,phone,website,review_rating\n" +
-		"Coffee Place,1 Main St,37.7749,-122.4194,http://maps/1,cafe,555,http://web,4.5\n"
+	csv := "title,address,latitude,longitude,link,category,phone,website,review_rating,thumbnail\n" +
+		"Coffee Place,1 Main St,37.7749,-122.4194,http://maps/1,cafe,555,http://web,4.5,https://lh3.googleusercontent.com/thumbnail.jpg\n"
 	writeCSV(t, dir, "job-1", csv)
 
 	places, err := svc.GetPlaces(context.Background(), "job-1")
@@ -40,6 +40,28 @@ func TestGetPlacesParsesCSV(t *testing.T) {
 
 	if p.ReviewRating != 4.5 {
 		t.Fatalf("unexpected rating: %v", p.ReviewRating)
+	}
+
+	if p.Thumbnail != "https://lh3.googleusercontent.com/thumbnail.jpg" {
+		t.Fatalf("unexpected thumbnail: %q", p.Thumbnail)
+	}
+}
+
+func TestGetPlacesUsesFirstImageWhenThumbnailMissing(t *testing.T) {
+	dir := t.TempDir()
+	svc := NewService(nil, dir)
+
+	csv := "title,latitude,longitude,images\n" +
+		"Image Place,1.5,2.5,\"[{\"\"title\"\":\"\"Front\"\",\"\"image\"\":\"\"https://lh3.googleusercontent.com/front.jpg\"\"}]\"\n"
+	writeCSV(t, dir, "job-images", csv)
+
+	places, err := svc.GetPlaces(context.Background(), "job-images")
+	if err != nil {
+		t.Fatalf("GetPlaces: %v", err)
+	}
+
+	if len(places) != 1 || places[0].Thumbnail != "https://lh3.googleusercontent.com/front.jpg" {
+		t.Fatalf("expected first image as thumbnail, got %+v", places)
 	}
 }
 

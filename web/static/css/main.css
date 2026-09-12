@@ -372,6 +372,8 @@ nav a:hover {
     padding: 8px;
     border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
+    display: flex;
+    gap: 8px;
 }
 
 .place-item:hover {
@@ -380,6 +382,25 @@ nav a:hover {
 
 .place-title {
     font-weight: 600;
+}
+
+.place-thumbnail {
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: #f0f0f0;
+}
+
+.place-popup-image {
+    display: block;
+    width: 180px;
+    max-width: 100%;
+    max-height: 130px;
+    margin: 6px 0;
+    border-radius: 4px;
+    object-fit: cover;
 }
 
 .place-address {

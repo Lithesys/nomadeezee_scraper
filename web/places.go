@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -19,6 +20,8 @@ var ErrPlacesNotFound = errors.New("places not found")
 type Place struct {
 	Title        string  `json:"title"`
 	Address      string  `json:"address"`
+	Thumbnail    string  `json:"thumbnail"`
+	Images       []PlaceImage `json:"images"`
 	Latitude     float64 `json:"latitude"`
 	Longitude    float64 `json:"longitude"`
 	Link         string  `json:"link"`
@@ -26,6 +29,12 @@ type Place struct {
 	Phone        string  `json:"phone"`
 	Website      string  `json:"website"`
 	ReviewRating float64 `json:"review_rating"`
+}
+
+// PlaceImage is an image URL and its optional caption from the scraper CSV.
+type PlaceImage struct {
+	Title string `json:"title"`
+	Image string `json:"image"`
 }
 
 // GetPlaces locates the job's CSV output and parses it into mappable places.
@@ -119,9 +128,17 @@ func parsePlaces(r io.Reader) ([]Place, error) {
 			rating = 0
 		}
 
+		images := parsePlaceImages(get(row, "images"))
+		thumbnail := get(row, "thumbnail")
+		if thumbnail == "" && len(images) > 0 {
+			thumbnail = images[0].Image
+		}
+
 		places = append(places, Place{
 			Title:        get(row, "title"),
 			Address:      get(row, "address"),
+			Thumbnail:    thumbnail,
+			Images:       images,
 			Latitude:     lat,
 			Longitude:    lon,
 			Link:         get(row, "link"),
@@ -133,6 +150,19 @@ func parsePlaces(r io.Reader) ([]Place, error) {
 	}
 
 	return places, nil
+}
+
+func parsePlaceImages(value string) []PlaceImage {
+	if value == "" {
+		return nil
+	}
+
+	var images []PlaceImage
+	if err := json.Unmarshal([]byte(value), &images); err != nil {
+		return nil
+	}
+
+	return images
 }
 
 // finite reports whether f is a usable, real number (not NaN or ±Inf).

@@ -66,6 +66,10 @@
 
         function placePopup(place) {
             var parts = ['<strong>' + escapeHtml(place.title) + '</strong>'];
+            var imageUrl = safeImageUrl(place.thumbnail);
+            if (imageUrl) {
+                parts.push('<img class="place-popup-image" src="' + imageUrl + '" alt="' + escapeHtml(place.title) + '" loading="lazy">');
+            }
             if (place.address) {
                 parts.push(escapeHtml(place.address));
             }
@@ -75,12 +79,24 @@
             return parts.join('<br>');
         }
 
+        function safeImageUrl(url) {
+            if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) {
+                return '';
+            }
+
+            return escapeHtml(url);
+        }
+
         function placeListItem(place, onSelect) {
             var item = document.createElement('div');
             item.className = 'place-item';
+            var imageUrl = safeImageUrl(place.thumbnail);
             item.innerHTML = '<div class="place-title">' + escapeHtml(place.title) + '</div>' +
                 (place.address ? '<div class="place-address">' + escapeHtml(place.address) + '</div>' : '') +
                 (place.review_rating ? '<div class="place-rating">★ ' + escapeHtml(String(place.review_rating)) + '</div>' : '');
+            if (imageUrl) {
+                item.insertAdjacentHTML('afterbegin', '<img class="place-thumbnail" src="' + imageUrl + '" alt="" loading="lazy">');
+            }
             item.addEventListener('click', onSelect);
             return item;
         }
