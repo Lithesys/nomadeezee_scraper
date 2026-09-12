@@ -133,6 +133,7 @@
             </div>
             <div class="content">
                 <div id="spinner" class="spinner"></div>
+                <p id="download-status" class="text-muted" role="status" aria-live="polite"></p>
                 <table id="job-table">
                     <thead>
                         <tr>
@@ -152,5 +153,57 @@
     </div>
 
     <div id="map-modal-container"></div>
+    <script>
+        (function () {
+            const downloadedJobIds = new Set();
+            const status = document.getElementById('download-status');
+
+            function hasDownloaded(jobId) {
+                if (downloadedJobIds.has(jobId)) {
+                    return true;
+                }
+
+                try {
+                    return sessionStorage.getItem('csv-downloaded:' + jobId) === 'true';
+                } catch (_) {
+                    return false;
+                }
+            }
+
+            function markDownloaded(jobId) {
+                downloadedJobIds.add(jobId);
+
+                try {
+                    sessionStorage.setItem('csv-downloaded:' + jobId, 'true');
+                } catch (_) {
+                    // The in-memory set still prevents repeat downloads in this page.
+                }
+            }
+
+            function downloadCompletedJobs() {
+                document.querySelectorAll('#job-table tbody tr[data-job-id]').forEach(function (row) {
+                    const jobId = row.dataset.jobId;
+                    const downloadLink = row.querySelector('a.download-button');
+
+                    if (!jobId || !downloadLink || hasDownloaded(jobId)) {
+                        return;
+                    }
+
+                    markDownloaded(jobId);
+                    downloadLink.click();
+
+                    if (status) {
+                        status.textContent = 'CSV download started for completed job ' + jobId + '.';
+                    }
+                });
+            }
+
+            document.body.addEventListener('htmx:afterSwap', function (event) {
+                if (event.target.matches('#job-table tbody')) {
+                    downloadCompletedJobs();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

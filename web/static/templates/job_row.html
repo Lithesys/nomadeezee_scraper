@@ -1,4 +1,4 @@
-<tr>
+<tr data-job-id="{{.ID}}">
     <td>{{.ID}}</td>
     <td>{{.Name}}</td>
     <td>{{.Date}}</td>
@@ -7,7 +7,7 @@
     </td>
     <td>
         {{ if eq .Status "ok" }}
-            <a href="/download?id={{.ID}}" download class="button download-button">Download</a>
+            <a href="/download?id={{.ID}}" download class="button download-button">Download CSV</a>
         {{ end }}
         <button hx-delete="/delete?id={{.ID}}" 
                 hx-target="closest tr"
